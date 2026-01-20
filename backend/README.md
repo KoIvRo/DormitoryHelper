@@ -35,9 +35,11 @@ For authentication using JWT token.
 * `POST /auth/login` (email: str, password: str)
 
 #### User
-* `GET /user/me` - Get current user info with accounts and transactions
+* `GET /user/me` - Get current user info with announcements
 
 #### Announcements
+* `GET /announcements/` - Get all announcements
+* `GET /announcements/category/{category}` - Get announcements by category
 * `GET /announcements/{id}` - Get announcements by ID
 * `POST /announcements/` - Create new announcements
 * `DELETE /announcements/{id}` - Delete announcements
