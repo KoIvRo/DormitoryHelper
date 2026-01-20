@@ -1,5 +1,6 @@
 from pydantic import BaseModel, EmailStr
 from datetime import datetime
+from typing import Literal
 
 
 class UserRegistration(BaseModel):
@@ -22,5 +23,6 @@ class AnnouncementtCreate(BaseModel):
 
     name: str
     link: str
+    category: Literal["transport", "sale", "hobby"]
     date: datetime
     end_date: datetime

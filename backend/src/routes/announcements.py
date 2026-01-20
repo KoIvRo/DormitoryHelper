@@ -7,19 +7,34 @@ from .models import AnnouncementtCreate
 
 announcement_router = APIRouter()
 
+@announcement_router.get("/")
+async def account(request: Request, db: Session = Depends(get_db)):
+    """Все объявления."""
+    announcement = db.query(Announcement).all()
+
+    return {"account": announcement}
+
+@announcement_router.get("/category/{category}")
+async def account(category: str, request: Request, db: Session = Depends(get_db)):
+    """Объявления по категории."""
+    request_user = request.state.user
+
+    announcement = db.query(Announcement).filter(Announcement.category == category).all()
+
+    if not announcement:
+        raise HTTPException(status_code=404)
+
+    return {"account": announcement}
 
 @announcement_router.get("/{id}")
 async def account(id: int, request: Request, db: Session = Depends(get_db)):
-    """Информация об аккаунте."""
+    """Информация об обявлении."""
     request_user = request.state.user
 
     announcement = db.query(Announcement).filter(Announcement.id == id).first()
 
     if not announcement:
         raise HTTPException(status_code=404)
-
-    if announcement.user_id != request_user["user_id"]:
-        raise HTTPException(status_code=401)
 
     return {"account": announcement}
 
@@ -28,7 +43,7 @@ async def account(id: int, request: Request, db: Session = Depends(get_db)):
 async def create_account(
     data: AnnouncementtCreate, request: Request, db: Session = Depends(get_db)
 ):
-    """Создание аккаунта."""
+    """Создание объявления."""
     request_user = request.state.user
 
     exsiting_user = db.query(User).filter(User.id == request_user["user_id"]).first()
@@ -38,6 +53,7 @@ async def create_account(
     new_announcement = Announcement(
         name=data.name,
         link=data.link,
+        category=data.category,
         date=data.date,
         end_date=data.end_date,
         user_id=exsiting_user.id,
@@ -52,7 +68,7 @@ async def create_account(
 
 @announcement_router.delete("/{id}")
 async def delete_account(id: int, request: Request, db: Session = Depends(get_db)):
-    """Удаление аккаунта."""
+    """Удаление объявления."""
     request_user = request.state.user
 
     announcement = db.query(Announcement).filter(Announcement.id == id).first()

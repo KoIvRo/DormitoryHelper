@@ -16,8 +16,9 @@ async def me(request: Request, db: Session = Depends(get_db)):
     if not exsiting_user:
         raise HTTPException("Invalid token")
 
-    announcement = db.query(Announcement).filter(Announcement.user_id == exsiting_user.id).all()
-
+    announcement = (
+        db.query(Announcement).filter(Announcement.user_id == exsiting_user.id).all()
+    )
 
     return {
         "email": exsiting_user.email,

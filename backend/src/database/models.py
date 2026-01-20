@@ -1,7 +1,6 @@
 from sqlalchemy.orm import DeclarativeBase, relationship
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
 
-
 class Base(DeclarativeBase):
     """Класс для ORM базы данных."""
 
@@ -29,6 +28,7 @@ class Announcement(Base):
     id = Column(Integer(), primary_key=True, autoincrement=True, index=True)
     name = Column(String(64))
     link = Column(String(64))
+    category = Column(String(64))
     date = Column(DateTime())
     end_date = Column(DateTime())
     user_id = Column(Integer(), ForeignKey("users.id", ondelete="CASCADE"))
