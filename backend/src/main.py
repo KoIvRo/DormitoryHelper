@@ -1,4 +1,6 @@
 import uvicorn
+import os
+from fastapi.staticfiles import StaticFiles
 from fastapi import FastAPI
 from routes.auth import auth_router
 from routes.user import user_router
@@ -23,17 +25,17 @@ app.include_router(auth_router, prefix="/auth")
 app.include_router(user_router, prefix="/user")
 app.include_router(announcement_router, prefix="/announcements")
 
+if os.path.exists("static"):
+    app.mount(
+        "/",
+        StaticFiles(directory="static", html=True),
+        name="static",
+    )
 
 def main() -> None:
     """Точка запуска REST API."""
     create_db()
     uvicorn.run("main:app", reload=True, host="0.0.0.0", port=8000)
-
-
-@app.get("/")
-async def root_get() -> None:
-    return {"title": "Hello, World!"}
-
 
 if __name__ == "__main__":
     main()
