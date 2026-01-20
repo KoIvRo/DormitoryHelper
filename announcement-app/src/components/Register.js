@@ -1,4 +1,3 @@
-// src/components/Register.js - аналогично обновляем
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { authAPI, userAPI } from '../services/api';

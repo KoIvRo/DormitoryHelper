@@ -1,4 +1,3 @@
-// src/components/AnnouncementList.js
 import React, { useState, useEffect } from 'react';
 import { announcementAPI, userAPI } from '../services/api';
 

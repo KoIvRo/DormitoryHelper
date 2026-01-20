@@ -1,4 +1,3 @@
-// src/components/Login.js - обновляем сохранение userId
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { authAPI, userAPI } from '../services/api';
