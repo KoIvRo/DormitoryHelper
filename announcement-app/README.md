@@ -1,70 +1,95 @@
-# Getting Started with Create React App
+# Frontend for DormitoryHelper
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## For start
 
-## Available Scripts
+In frontend directory
+```
+npm install
+npm start
+```
 
-In the project directory, you can run:
+## Description
 
-### `npm start`
+Frontend application for DormitoryHelper system - announcement board for dormitory. Implemented as SPA (Single Page Application) on React with modern minimalistic design.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## Main features
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+* User registration and authentication
+* View all announcements in real time
+* Filter announcements by categories (transport, sale, hobby)
+* Create new announcements
+* Delete own announcements
+* User profile
+* Automatic announcement update every 3 seconds (polling)
 
-### `npm test`
+## Technology stack
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+* React 18
+* React Router DOM for navigation
+* Axios for HTTP requests
+* CSS for styles (minimalistic design)
+* Responsive design
 
-### `npm run build`
+## Project structure
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+```
+announcement-app/
+├── src/
+│   ├── components/
+│   │   ├── Login.js
+│   │   ├── Register.js
+│   │   ├── AnnouncementList.js
+│   │   ├── AnnouncementForm.js
+│   │   ├── UserProfile.js
+│   │   └── Navbar.js
+│   ├── services/
+│   │   └── api.js
+│   ├── App.js
+│   ├── index.js
+│   └── index.css
+├── package.json
+└── README.md
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## API connection
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+The application connects to the backend at `http://localhost:8000`. 
+All API requests automatically include JWT token from `localStorage`.
 
-### `npm run eject`
+## Available routes
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+* `/` - Main page with all announcements
+* `/login` - User login
+* `/register` - User registration
+* `/create` - Create new announcement
+* `/profile` - User profile with personal announcements
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## Requirements
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+* Node.js 16 or higher
+* Backend must be running on http://localhost:8000
+* Backend must have CORS configured for http://localhost:3000
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+## Build for production
 
-## Learn More
+```
+npm run build
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## Notes
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+* The application uses polling to update announcements every 3 seconds
+* Users can only delete their own announcements
+* JWT token is stored in localStorage
+* All forms have validation
 
-### Code Splitting
+## Tools
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+* React
+* React Router
+* Axios
+* CSS
 
-### Analyzing the Bundle Size
+### Made by
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+* Korotaev Ivan
