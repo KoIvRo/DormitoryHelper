@@ -1,4 +1,4 @@
-# Backend for MoneyControl
+# Backend for DormitoryHelper
 
 ## For start
 
@@ -37,19 +37,10 @@ For authentication using JWT token.
 #### User
 * `GET /user/me` - Get current user info with accounts and transactions
 
-#### Accounts
-* `GET /accounts/{id}` - Get account by ID
-* `POST /accounts/` - Create new account
-* `DELETE /accounts/{id}` - Delete account
-
-#### Transactions
-* `GET /transactions/{id}` - Get transaction by ID
-* `GET /transactions/income` - Get all income transactions
-* `GET /transactions/consumption` - Get all consumption transactions  
-* `GET /transactions/categories` - Get all unique transaction categories
-* `GET /transactions/category/{category}` - Get transactions by category
-* `POST /transactions/` - Create new transaction
-* `DELETE /transactions/{id}` - Delete transaction
+#### Announcements
+* `GET /announcements/{id}` - Get announcements by ID
+* `POST /announcements/` - Create new announcements
+* `DELETE /announcements/{id}` - Delete announcements
 
 ## API Examples
 
@@ -66,38 +57,15 @@ curl -X POST "http://localhost:8000/auth/login" -H "Content-Type: application/js
 curl -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoiYWNjZXNzIiwidXNlcl9pZCI6MX0.n2bhlHwTGFpTx6W2WOeAw7_rQUhO1umGHiv9XYLOBxc" http://localhost:8000/user/me
 ```
 
-### Accounts
+### Announcements
 ```
-curl -X POST "http://localhost:8000/accounts/" -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoiYWNjZXNzIiwidXNlcl9pZCI6MX0.n2bhlHwTGFpTx6W2WOeAw7_rQUhO1umGHiv9XYLOBxc" -d "{\"name\":\"Основной счет\",\"balance\":1000.0}"
-```
-```
-curl -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoiYWNjZXNzIiwidXNlcl9pZCI6MX0.n2bhlHwTGFpTx6W2WOeAw7_rQUhO1umGHiv9XYLOBxc" http://localhost:8000/accounts/1
+curl -X POST "http://localhost:8000/announcements/" -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJ0eXBlIjoiYWNjZXNzIn0.6sCAY8zwf8ucfZCDiGiYve8KgiZU7SLurxMK9o2hiSw" -d "{\"name\":\"Такси\",\"link\":\"+7912\",\"date\":\"2026-01-21T00:00:00\",\"end_date\":\"2026-01-21T10:00:00\"}"
 ```
 ```
-curl -X DELETE "http://localhost:8000/accounts/2" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoiYWNjZXNzIiwidXNlcl9pZCI6MX0.n2bhlHwTGFpTx6W2WOeAw7_rQUhO1umGHiv9XYLOBxc"
-```
-
-### Transactions
-```
-curl -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoiYWNjZXNzIiwidXNlcl9pZCI6MX0.n2bhlHwTGFpTx6W2WOeAw7_rQUhO1umGHiv9XYLOBxc" http://localhost:8000/transactions/1
+curl -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoiYWNjZXNzIiwidXNlcl9pZCI6MX0.n2bhlHwTGFpTx6W2WOeAw7_rQUhO1umGHiv9XYLOBxc" http://localhost:8000/announcements/1
 ```
 ```
-curl -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoiYWNjZXNzIiwidXNlcl9pZCI6MX0.n2bhlHwTGFpTx6W2WOeAw7_rQUhO1umGHiv9XYLOBxc" http://localhost:8000/transactions/income
-```
-```
-curl -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoiYWNjZXNzIiwidXNlcl9pZCI6MX0.n2bhlHwTGFpTx6W2WOeAw7_rQUhO1umGHiv9XYLOBxc" http://localhost:8000/transactions/consumption
-```
-```
-curl -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoiYWNjZXNzIiwidXNlcl9pZCI6MX0.n2bhlHwTGFpTx6W2WOeAw7_rQUhO1umGHiv9XYLOBxc" http://localhost:8000/transactions/categories
-```
-```
-curl -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoiYWNjZXNzIiwidXNlcl9pZCI6MX0.n2bhlHwTGFpTx6W2WOeAw7_rQUhO1umGHiv9XYLOBxc" http://localhost:8000/transactions/category/Salary
-```
-```
-curl -X POST "http://localhost:8000/transactions/" -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoiYWNjZXNzIiwidXNlcl9pZCI6MX0.n2bhlHwTGFpTx6W2WOeAw7_rQUhO1umGHiv9XYLOBxc" -d "{\"amount\":1500,\"category\":\"Salary\",\"date\":\"2024-01-15T14:30:00\",\"comment\":\"Monthly salary\",\"account_id\":1}"
-```
-```
-curl -X DELETE "http://localhost:8000/transactions/2" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoiYWNjZXNzIiwidXNlcl9pZCI6MX0.n2bhlHwTGFpTx6W2WOeAw7_rQUhO1umGHiv9XYLOBxc"
+curl -X DELETE "http://localhost:8000/announcements/1" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoiYWNjZXNzIiwidXNlcl9pZCI6MX0.n2bhlHwTGFpTx6W2WOeAw7_rQUhO1umGHiv9XYLOBxc"
 ```
 
 ## Tools
