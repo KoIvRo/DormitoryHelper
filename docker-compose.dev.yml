@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  frontend:
+    build: ./announcement-app
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./announcement-app:/app
+      - /app/node_modules
+    command: npm start
+
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/src:/app/src
+      - ./backend/database.db:/app/database.db
