@@ -1,19 +1,15 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
-const Navbar = () => {
-  const navigate = useNavigate();
-  const token = localStorage.getItem('token');
-
+const Navbar = ({ isAuthenticated }) => {
   const handleLogout = () => {
-    // Сначала очищаем localStorage
-    localStorage.removeItem('token');
+    // Очищаем localStorage
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
     localStorage.removeItem('userId');
     
-    // Используем setTimeout для безопасного перехода
-    setTimeout(() => {
-      navigate('/login', { replace: true });
-    }, 0);
+    // Перезагружаем страницу для сброса состояния React
+    window.location.reload();
   };
 
   return (
@@ -21,7 +17,7 @@ const Navbar = () => {
       <div className="nav-content">
         <h2>DormitoryHelper</h2>
         <ul className="nav-links">
-          {token ? (
+          {isAuthenticated ? (
             <>
               <li><Link to="/">Все объявления</Link></li>
               <li><Link to="/create">Создать объявление</Link></li>

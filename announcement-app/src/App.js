@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Login from './components/Login';
 import Register from './components/Register';
@@ -8,33 +8,45 @@ import AnnouncementForm from './components/AnnouncementForm';
 import UserProfile from './components/UserProfile';
 
 const PrivateRoute = ({ children }) => {
-  const token = localStorage.getItem('token');
-  return token ? children : <Navigate to="/login" replace />;
+  const token = localStorage.getItem('access_token');
+  return token ? children : <Navigate to="/login" />;
 };
 
 function App() {
-  const location = useLocation();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  useEffect(() => {
-    // Проверяем наличие токена при каждом изменении location
-    const token = localStorage.getItem('token');
+  // Функция для обновления состояния аутентификации
+  const updateAuthStatus = () => {
+    const token = localStorage.getItem('access_token');
     setIsAuthenticated(!!token);
-  }, [location]);
+  };
+
+  useEffect(() => {
+    updateAuthStatus();
+    
+    // Слушаем изменения в localStorage
+    const handleStorageChange = () => {
+      updateAuthStatus();
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
 
   return (
     <div className="App">
-      <Navbar />
+      <Navbar isAuthenticated={isAuthenticated} />
       <Routes>
-        {/* Публичные маршруты */}
         <Route path="/login" element={
-          isAuthenticated ? <Navigate to="/" replace /> : <Login />
+          <Login onLogin={updateAuthStatus} />
         } />
         <Route path="/register" element={
-          isAuthenticated ? <Navigate to="/" replace /> : <Register />
+          <Register onRegister={updateAuthStatus} />
         } />
         
-        {/* Приватные маршруты */}
         <Route path="/" element={
           <PrivateRoute>
             <AnnouncementList />
@@ -51,8 +63,7 @@ function App() {
           </PrivateRoute>
         } />
         
-        {/* Перенаправление для несуществующих маршрутов */}
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </div>
   );

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { authAPI, userAPI } from '../services/api';
 
-const Login = () => {
+const Login = ({ onLogin }) => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: '',
@@ -26,8 +26,9 @@ const Login = () => {
     try {
       const response = await authAPI.login(formData);
       
-      // Сохраняем токен
-      localStorage.setItem('token', response.data.access);
+      // Сохраняем оба токена
+      localStorage.setItem('access_token', response.data.access);
+      localStorage.setItem('refresh_token', response.data.refresh);
       
       // Получаем информацию о пользователе для сохранения ID
       try {
@@ -35,6 +36,11 @@ const Login = () => {
         localStorage.setItem('userId', userResponse.data.id);
       } catch (userErr) {
         console.error('Ошибка получения данных пользователя:', userErr);
+      }
+      
+      // Вызываем callback для обновления состояния аутентификации
+      if (onLogin) {
+        onLogin();
       }
       
       // Перенаправляем на главную страницу
