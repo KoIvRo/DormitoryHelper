@@ -44,6 +44,15 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
     
+    if (error.response?.status === 403 && 
+        error.response?.data?.detail === "Token revoked") {
+      // Очищаем localStorage
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
+      localStorage.removeItem('userId');
+      return Promise.reject(error);
+    }
+
     // Если ошибка 401 и это не запрос на refresh
     if (error.response?.status === 401 && 
         !originalRequest.url.includes('/auth/refresh') &&
@@ -107,6 +116,10 @@ api.interceptors.response.use(
 export const authAPI = {
   register: (userData) => api.post('/auth/register', userData),
   login: (userData) => api.post('/auth/login', userData),
+  logout: () => {
+    const token = localStorage.getItem('access_token');
+    return api.post('/auth/logout', { access_token: token });
+  },
   refresh: (refreshToken) => api.post('/auth/refresh', { refresh_token: refreshToken }),
 };
 

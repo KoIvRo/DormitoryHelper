@@ -1,10 +1,22 @@
 version: '3.8'
 
 services:
+  redis:
+    image: redis:alpine
+    container_name: dormitory_helper_dev_redis
+    ports:
+      - "6379:6379"
+    networks:
+      - app-network
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+
   frontend:
     build: ./announcement-app
     ports:
       - "3000:3000"
+    networks:
+      - app-network
     volumes:
       - ./announcement-app:/app
       - /app/node_modules
@@ -14,5 +26,18 @@ services:
     build: ./backend
     ports:
       - "8000:8000"
+    networks:
+      - app-network
     volumes:
       - ./backend/database.db:/app/database.db
+    depends_on:
+      - redis
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - JWT_SECRET_KEY=key
+      - ALGORITHM=HS256
+
+networks:
+  app-network:
+    driver: bridge

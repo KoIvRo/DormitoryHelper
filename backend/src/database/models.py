@@ -1,6 +1,7 @@
 from sqlalchemy.orm import DeclarativeBase, relationship
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
 
+
 class Base(DeclarativeBase):
     """Класс для ORM базы данных."""
 

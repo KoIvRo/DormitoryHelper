@@ -7,30 +7,31 @@ from .models import AnnouncementtCreate
 
 announcement_router = APIRouter()
 
+
 @announcement_router.get("/")
-async def account(request: Request, db: Session = Depends(get_db)):
+async def announcement(request: Request, db: Session = Depends(get_db)):
     """Все объявления."""
     announcement = db.query(Announcement).all()
 
     return {"account": announcement}
 
-@announcement_router.get("/category/{category}")
-async def account(category: str, request: Request, db: Session = Depends(get_db)):
-    """Объявления по категории."""
-    request_user = request.state.user
 
-    announcement = db.query(Announcement).filter(Announcement.category == category).all()
+@announcement_router.get("/category/{category}")
+async def announcement_category(category: str, request: Request, db: Session = Depends(get_db)):
+    """Объявления по категории."""
+    announcement = (
+        db.query(Announcement).filter(Announcement.category == category).all()
+    )
 
     if not announcement:
         raise HTTPException(status_code=404)
 
     return {"account": announcement}
 
+
 @announcement_router.get("/{id}")
 async def account(id: int, request: Request, db: Session = Depends(get_db)):
     """Информация об обявлении."""
-    request_user = request.state.user
-
     announcement = db.query(Announcement).filter(Announcement.id == id).first()
 
     if not announcement:

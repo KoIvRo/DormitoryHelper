@@ -1,15 +1,23 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { authAPI } from '../services/api';
 
 const Navbar = ({ isAuthenticated }) => {
-  const handleLogout = () => {
-    // Очищаем localStorage
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
-    localStorage.removeItem('userId');
-    
-    // Перезагружаем страницу для сброса состояния React
-    window.location.reload();
+  const handleLogout = async () => {
+    try {
+      // Отправляем запрос на logout для добавления токена в blacklist
+      await authAPI.logout();
+    } catch (error) {
+      console.error('Ошибка при logout:', error);
+    } finally {
+      // Очищаем localStorage
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
+      localStorage.removeItem('userId');
+      
+      // Перезагружаем страницу для сброса состояния React
+      window.location.reload();
+    }
   };
 
   return (

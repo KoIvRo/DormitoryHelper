@@ -32,10 +32,12 @@ if os.path.exists("static"):
         name="static",
     )
 
+
 def main() -> None:
     """Точка запуска REST API."""
     create_db()
     uvicorn.run("main:app", reload=True, host="0.0.0.0", port=8000)
+
 
 if __name__ == "__main__":
     main()
