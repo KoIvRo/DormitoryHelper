@@ -17,7 +17,9 @@ async def announcement(request: Request, db: Session = Depends(get_db)):
 
 
 @announcement_router.get("/category/{category}")
-async def announcement_category(category: str, request: Request, db: Session = Depends(get_db)):
+async def announcement_category(
+    category: str, request: Request, db: Session = Depends(get_db)
+):
     """Объявления по категории."""
     announcement = (
         db.query(Announcement).filter(Announcement.category == category).all()

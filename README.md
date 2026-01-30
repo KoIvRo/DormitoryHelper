@@ -31,11 +31,11 @@ Authentication made with PyJWT and redis for token in blacklist.
 
 * Python 3.12
 * FastAPI
-* SQLite
+* PostgreSQL
 * SQLAlchemy
 * PyJWT
 * Poetry for dependency management
-* redis
+* redis for token blacklist
 
 ## Frontend
 

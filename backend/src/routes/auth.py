@@ -9,6 +9,7 @@ from .redis import RedisBlacklist
 
 auth_router = APIRouter()
 
+
 @auth_router.post("/register")
 async def register(user_data: UserRegistration, db: Session = Depends(get_db)):
     """Эндпоинт для регистрации."""
@@ -63,14 +64,15 @@ async def refresh_token(request_data: dict):
 
     return {"access": new_access_token}
 
+
 @auth_router.post("/logout")
 async def logout(authorization: str = Header(None)):
     if not authorization:
         raise HTTPException(status_code=401, detail="No token")
-    
+
     if not authorization.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Invalid token format")
-    
+
     access_token = authorization.split(" ")[1]
     await RedisBlacklist.add_token(access_token)
     return {"message": "Logged out"}

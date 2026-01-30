@@ -2,8 +2,10 @@ import os
 import time
 from redis.asyncio import Redis, ConnectionPool
 
+
 class RedisClient:
     """Синглтон для управления redis."""
+
     _instance = None
     _pool = None
 
@@ -11,7 +13,7 @@ class RedisClient:
         if not cls._instance:
             cls._instance = super().__new__(cls)
         return cls._instance
-    
+
     @classmethod
     async def get_client(cls) -> Redis:
         """Получения коннекта к redis."""
@@ -24,7 +26,7 @@ class RedisClient:
                 port=redis_port,
                 db=0,
                 decode_responses=True,
-                max_connections=10
+                max_connections=10,
             )
 
         return Redis(connection_pool=cls._pool)
@@ -32,6 +34,7 @@ class RedisClient:
 
 class RedisBlacklist:
     """Класс для добавления и удаления токенов в redis."""
+
     redis_set_name = "blacklist"
 
     @classmethod
@@ -41,7 +44,7 @@ class RedisBlacklist:
 
         await cls.delete_token(redis_client)
 
-        expire_at = time.time() + 3600 # 1 час
+        expire_at = time.time() + 3600  # 1 час
         await redis_client.zadd(cls.redis_set_name, {token: expire_at})
 
     @classmethod
