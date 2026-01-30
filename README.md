@@ -25,6 +25,7 @@ DormitoryHelper is a web application for managing announcements in student dormi
 ## Backend
 
 The backend provides REST API for user authentication and announcement management.
+Authentication made with PyJWT and redis for token in blacklist.
 
 ### Backend Technology Stack
 
@@ -34,6 +35,7 @@ The backend provides REST API for user authentication and announcement managemen
 * SQLAlchemy
 * PyJWT
 * Poetry for dependency management
+* redis
 
 ## Frontend
 
@@ -83,24 +85,6 @@ Services:
 Features:
 * Frontend optimized production build
 * Files copied into containers
-
-## Manual Setup
-
-### Backend Setup
-
-```bash
-cd backend
-poetry install
-poetry run startserver
-```
-
-### Frontend Setup
-
-```bash
-cd announcement-app
-npm install
-npm start
-```
 
 ### Made by
 

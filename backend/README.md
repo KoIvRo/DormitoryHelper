@@ -33,6 +33,7 @@ For authentication using JWT token.
 #### Authentication
 * `POST /auth/register` (email: str, password: str, name: str)
 * `POST /auth/login` (email: str, password: str)
+* `POST /auth/logout`
 
 #### User
 * `GET /user/me` - Get current user info with announcements
@@ -43,35 +44,6 @@ For authentication using JWT token.
 * `GET /announcements/{id}` - Get announcements by ID
 * `POST /announcements/` - Create new announcements
 * `DELETE /announcements/{id}` - Delete announcements
-
-## API Examples
-
-### Authentication
-```
-curl -X POST "http://localhost:8000/auth/register" -H "Content-Type: application/json" -d "{\"email\":\"test@example.com\",\"password\":\"mypassword123\",\"name\":\"Ivan\"}"
-```
-```
-curl -X POST "http://localhost:8000/auth/login" -H "Content-Type: application/json" -d "{\"email\":\"test@example.com\",\"password\":\"mypassword123\"}"
-```
-
-### User
-```
-curl -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoiYWNjZXNzIiwidXNlcl9pZCI6MX0.n2bhlHwTGFpTx6W2WOeAw7_rQUhO1umGHiv9XYLOBxc" http://localhost:8000/user/me
-```
-
-### Announcements
-```
-curl -X POST "http://localhost:8000/announcements/" -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJ0eXBlIjoiYWNjZXNzIn0.6sCAY8zwf8ucfZCDiGiYve8KgiZU7SLurxMK9o2hiSw" -d "{\"name\":\"Такси\",\"link\":\"+7912\",\"category\":\"transport\",\"date\":\"2026-01-21T00:00:00\",\"end_date\":\"2026-01-21T10:00:00\"}"
-```
-```
-curl -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoiYWNjZXNzIiwidXNlcl9pZCI6MX0.n2bhlHwTGFpTx6W2WOeAw7_rQUhO1umGHiv9XYLOBxc" http://localhost:8000/announcements/1
-```
-```
-curl -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoiYWNjZXNzIiwidXNlcl9pZCI6MX0.n2bhlHwTGFpTx6W2WOeAw7_rQUhO1umGHiv9XYLOBxc" http://localhost:8000/announcements/category/transport
-```
-```
-curl -X DELETE "http://localhost:8000/announcements/1" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoiYWNjZXNzIiwidXNlcl9pZCI6MX0.n2bhlHwTGFpTx6W2WOeAw7_rQUhO1umGHiv9XYLOBxc"
-```
 
 ## Tools
 * Python
