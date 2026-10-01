@@ -18,8 +18,8 @@ class UserLogin(BaseModel):
     password: str
 
 
-class AnnouncementtCreate(BaseModel):
-    "Модель для создания объявления."
+class AnnouncementCreate(BaseModel):
+    """Модель для создания и обновления объявления."""
 
     name: str
     link: str

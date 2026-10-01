@@ -1,7 +1,6 @@
 from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi.responses import JSONResponse
 from security.jwt_utils import verify_jwt
-from routes.redis import RedisBlacklist
 
 
 class JWTMiddleware(BaseHTTPMiddleware):
@@ -12,7 +11,6 @@ class JWTMiddleware(BaseHTTPMiddleware):
         "/auth/register",
         "/auth/login",
         "/openapi.json",
-        "/auth/refresh",
         "/auth/refresh",
     )
 
@@ -28,15 +26,16 @@ class JWTMiddleware(BaseHTTPMiddleware):
             access_token = auth_headers.split()[1]
 
         if not access_token:
-            return JSONResponse({"code": 401, "detail": "Token not exist"})
-
-        if await RedisBlacklist.check_token(access_token):
-            return JSONResponse({"code": 401, "detail": "Token in blacklist"})
+            return JSONResponse(
+                {"code": 401, "detail": "Token not exist"}, status_code=401
+            )
 
         payload = verify_jwt(access_token)
 
         if not payload or payload["type"] != "access":
-            return JSONResponse({"code": 401, "detail": "Invalid token"})
+            return JSONResponse(
+                {"code": 401, "detail": "Invalid token"}, status_code=401
+            )
 
         request.state.user = payload
         return await call_next(request)

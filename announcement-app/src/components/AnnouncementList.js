@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { announcementAPI, userAPI } from '../services/api';
 
 const AnnouncementList = () => {
+  const navigate = useNavigate();
   const [announcements, setAnnouncements] = useState([]);
   const [filteredAnnouncements, setFilteredAnnouncements] = useState([]);
   const [category, setCategory] = useState('all');
@@ -154,12 +156,20 @@ const AnnouncementList = () => {
                   
                   {/* Показываем кнопку удаления только если пользователь владелец */}
                   {isOwner && (
-                    <button 
-                      className="btn btn-danger"
-                      onClick={() => handleDelete(announcement.id)}
-                    >
-                      Удалить
-                    </button>
+                    <>
+                      <button
+                        className="btn btn-primary"
+                        onClick={() => navigate(`/edit/${announcement.id}`)}
+                      >
+                        Изменить
+                      </button>
+                      <button
+                        className="btn btn-danger"
+                        onClick={() => handleDelete(announcement.id)}
+                      >
+                        Удалить
+                      </button>
+                    </>
                   )}
                 </div>
                 

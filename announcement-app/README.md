@@ -18,13 +18,14 @@ Frontend application for DormitoryHelper system - announcement board for dormito
 * View all announcements in real time
 * Filter announcements by categories (transport, sale, hobby)
 * Create new announcements
+* Edit own announcements
 * Delete own announcements
 * User profile
 * Automatic announcement update every 3 seconds (polling)
 
 ## Technology stack
 
-* React 18
+* React 19
 * React Router DOM for navigation
 * Axios for HTTP requests
 * CSS for styles (minimalistic design)
@@ -53,7 +54,7 @@ announcement-app/
 
 ## API connection
 
-The application connects to the backend at `http://localhost:8000`. 
+In development, the application connects to `http://localhost:8000`. In the production image, requests use the relative `/api` path and Nginx proxies them to the backend service.
 All API requests automatically include JWT token from `localStorage`.
 
 ## Available routes
@@ -62,11 +63,12 @@ All API requests automatically include JWT token from `localStorage`.
 * `/login` - User login
 * `/register` - User registration
 * `/create` - Create new announcement
+* `/edit/:id` - Edit own announcement
 * `/profile` - User profile with personal announcements
 
 ## Requirements
 
-* Node.js 16 or higher
+* Node.js 20 or higher
 * Backend must be running on http://localhost:8000
 * Backend must have CORS configured for http://localhost:3000
 
@@ -79,7 +81,7 @@ npm run build
 ## Notes
 
 * The application uses polling to update announcements every 3 seconds
-* Users can only delete their own announcements
+* Users can only edit and delete their own announcements
 * JWT token is stored in localStorage
 * All forms have validation
 

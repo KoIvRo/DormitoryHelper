@@ -1,27 +1,16 @@
 # Backend for DormitoryHelper
 
-## For start
+## Local start
 
-In backend directory
+PostgreSQL must already be available. In the `backend` directory, set its connection parameters and the JWT secret, then run:
+
 ```
 poetry install
-poetry run startserver
+cd src
+POSTGRES_HOST=localhost JWT_SECRET_KEY=local-secret poetry run uvicorn main:app --reload --host=0.0.0.0 --port=8000
 ```
 
-or
-
-In src/
-```
-uvicorn main:app --reload --host=0.0.0.0 --port=8000
-```
-
-or with docker
-
-In backend/
-```
-docker build -t backend .
-docker run -p 8000:8000 backend
-```
+For the reproducible full-stack start, use Docker Compose as described in the root `README.md`.
 
 ## Documentation
 
@@ -33,7 +22,7 @@ For authentication using JWT token.
 #### Authentication
 * `POST /auth/register` (email: str, password: str, name: str)
 * `POST /auth/login` (email: str, password: str)
-* `POST /auth/logout`
+* `POST /auth/refresh` - Refresh access token
 
 #### User
 * `GET /user/me` - Get current user info with announcements
@@ -43,13 +32,14 @@ For authentication using JWT token.
 * `GET /announcements/category/{category}` - Get announcements by category
 * `GET /announcements/{id}` - Get announcements by ID
 * `POST /announcements/` - Create new announcements
+* `PUT /announcements/{id}` - Update own announcement
 * `DELETE /announcements/{id}` - Delete announcements
 
 ## Tools
 * Python
 * FastAPI
 * uvicorn
-* SQLite
+* PostgreSQL
 * SQLalchemy
 * PyJWT
 

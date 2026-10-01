@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { userAPI, announcementAPI } from '../services/api';
 
 const UserProfile = () => {
+  const navigate = useNavigate();
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -70,7 +72,7 @@ const UserProfile = () => {
               <p><strong>Конец:</strong> {formatDate(announcement.end_date)}</p>
               
               <div style={{ marginTop: '1rem', display: 'flex', gap: '0.5rem' }}>
-                <button 
+                <button
                   className="btn btn-secondary"
                   onClick={() => {
                     if (announcement.link.startsWith('http')) {
@@ -83,7 +85,14 @@ const UserProfile = () => {
                   {announcement.link.startsWith('+') ? 'Позвонить' : 'Перейти по ссылке'}
                 </button>
                 
-                <button 
+                <button
+                  className="btn btn-primary"
+                  onClick={() => navigate(`/edit/${announcement.id}`)}
+                >
+                  Изменить
+                </button>
+
+                <button
                   className="btn btn-danger"
                   onClick={() => handleDeleteAnnouncement(announcement.id)}
                 >

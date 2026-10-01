@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL = process.env.REACT_APP_API_URL ||
+  (process.env.NODE_ENV === 'production' ? '/api' : 'http://localhost:8000');
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -8,6 +9,26 @@ const api = axios.create({
     'Content-Type': 'application/json',
   },
 });
+
+export const getApiErrorMessage = (error, fallback) => {
+  const detail = error.response?.data?.detail;
+
+  if (typeof detail === 'string') {
+    return detail;
+  }
+
+  if (Array.isArray(detail)) {
+    return detail
+      .map((item) => {
+        const field = Array.isArray(item.loc) ? item.loc[item.loc.length - 1] : null;
+        return field ? `${field}: ${item.msg}` : item.msg;
+      })
+      .filter(Boolean)
+      .join('; ');
+  }
+
+  return fallback;
+};
 
 // Очередь запросов, ожидающих обновления токена
 let isRefreshing = false;
@@ -44,15 +65,6 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
     
-    if (error.response?.status === 403 && 
-        error.response?.data?.detail === "Token revoked") {
-      // Очищаем localStorage
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('refresh_token');
-      localStorage.removeItem('userId');
-      return Promise.reject(error);
-    }
-
     // Если ошибка 401 и это не запрос на refresh
     if (error.response?.status === 401 && 
         !originalRequest.url.includes('/auth/refresh') &&
@@ -75,7 +87,8 @@ api.interceptors.response.use(
       
       const refreshToken = localStorage.getItem('refresh_token');
       if (!refreshToken) {
-        // Если нет refresh токена, очищаем localStorage
+        processQueue(error, null);
+        isRefreshing = false;
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
         localStorage.removeItem('userId');
@@ -102,6 +115,7 @@ api.interceptors.response.use(
       } catch (refreshError) {
         // Если refresh не удался, очищаем localStorage
         processQueue(refreshError, null);
+        isRefreshing = false;
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
         localStorage.removeItem('userId');
@@ -116,10 +130,6 @@ api.interceptors.response.use(
 export const authAPI = {
   register: (userData) => api.post('/auth/register', userData),
   login: (userData) => api.post('/auth/login', userData),
-  logout: () => {
-    const token = localStorage.getItem('access_token');
-    return api.post('/auth/logout', { access_token: token });
-  },
   refresh: (refreshToken) => api.post('/auth/refresh', { refresh_token: refreshToken }),
 };
 
@@ -128,6 +138,7 @@ export const announcementAPI = {
   getAnnouncementById: (id) => api.get(`/announcements/${id}`),
   getAnnouncementsByCategory: (category) => api.get(`/announcements/category/${category}`),
   createAnnouncement: (announcementData) => api.post('/announcements/', announcementData),
+  updateAnnouncement: (id, announcementData) => api.put(`/announcements/${id}`, announcementData),
   deleteAnnouncement: (id) => api.delete(`/announcements/${id}`),
 };
 

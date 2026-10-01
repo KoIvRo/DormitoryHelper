@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { authAPI, userAPI } from '../services/api';
+import { authAPI, userAPI, getApiErrorMessage } from '../services/api';
 
 const Register = ({ onRegister }) => {
   const navigate = useNavigate();
@@ -47,7 +47,7 @@ const Register = ({ onRegister }) => {
       // Перенаправляем на главную страницу
       navigate('/');
     } catch (err) {
-      setError(err.response?.data?.detail || 'Ошибка регистрации');
+      setError(getApiErrorMessage(err, 'Ошибка регистрации'));
     } finally {
       setLoading(false);
     }

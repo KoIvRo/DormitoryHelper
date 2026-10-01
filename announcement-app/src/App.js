@@ -57,6 +57,11 @@ function App() {
             <AnnouncementForm />
           </PrivateRoute>
         } />
+        <Route path="/edit/:id" element={
+          <PrivateRoute>
+            <AnnouncementForm />
+          </PrivateRoute>
+        } />
         <Route path="/profile" element={
           <PrivateRoute>
             <UserProfile />

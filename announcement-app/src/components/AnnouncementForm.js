@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { announcementAPI } from '../services/api';
+import { useNavigate, useParams } from 'react-router-dom';
+import { announcementAPI, getApiErrorMessage } from '../services/api';
 
 const AnnouncementForm = () => {
   const navigate = useNavigate();
+  const { id } = useParams();
+  const isEditing = Boolean(id);
   const [formData, setFormData] = useState({
     name: '',
     link: '',
@@ -14,6 +16,32 @@ const AnnouncementForm = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
+
+  React.useEffect(() => {
+    if (!isEditing) return;
+
+    const loadAnnouncement = async () => {
+      setLoading(true);
+      try {
+        const response = await announcementAPI.getAnnouncementById(id);
+        const announcement = response.data.account;
+        const toLocalDateTime = (value) => new Date(value).toISOString().slice(0, 16);
+        setFormData({
+          name: announcement.name,
+          link: announcement.link,
+          category: announcement.category,
+          date: toLocalDateTime(announcement.date),
+          end_date: toLocalDateTime(announcement.end_date)
+        });
+      } catch (err) {
+        setError(getApiErrorMessage(err, 'Ошибка загрузки объявления'));
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadAnnouncement();
+  }, [id, isEditing]);
 
   const handleChange = (e) => {
     setFormData({
@@ -36,16 +64,22 @@ const AnnouncementForm = () => {
         end_date: new Date(formData.end_date).toISOString()
       };
 
-      await announcementAPI.createAnnouncement(announcementData);
+      if (isEditing) {
+        await announcementAPI.updateAnnouncement(id, announcementData);
+      } else {
+        await announcementAPI.createAnnouncement(announcementData);
+      }
       
-      setSuccess('Объявление успешно создано!');
-      setFormData({
-        name: '',
-        link: '',
-        category: 'transport',
-        date: '',
-        end_date: ''
-      });
+      setSuccess(isEditing ? 'Объявление успешно обновлено!' : 'Объявление успешно создано!');
+      if (!isEditing) {
+        setFormData({
+          name: '',
+          link: '',
+          category: 'transport',
+          date: '',
+          end_date: ''
+        });
+      }
       
       // Через 2 секунды перенаправляем на главную
       setTimeout(() => {
@@ -53,7 +87,7 @@ const AnnouncementForm = () => {
       }, 2000);
       
     } catch (err) {
-      setError(err.response?.data?.detail || 'Ошибка создания объявления');
+      setError(getApiErrorMessage(err, 'Ошибка сохранения объявления'));
     } finally {
       setLoading(false);
     }
@@ -68,7 +102,7 @@ const AnnouncementForm = () => {
   return (
     <div className="container">
       <div style={{ maxWidth: '600px', margin: '0 auto' }}>
-        <h1>Создать новое объявление</h1>
+        <h1>{isEditing ? 'Редактировать объявление' : 'Создать новое объявление'}</h1>
         
         {error && <div className="error">{error}</div>}
         {success && <div className="success">{success}</div>}
@@ -146,7 +180,7 @@ const AnnouncementForm = () => {
             className="btn btn-primary btn-block"
             disabled={loading}
           >
-            {loading ? 'Создание...' : 'Создать объявление'}
+            {loading ? 'Сохранение...' : (isEditing ? 'Сохранить изменения' : 'Создать объявление')}
           </button>
         </form>
       </div>

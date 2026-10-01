@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { authAPI, userAPI } from '../services/api';
+import { authAPI, userAPI, getApiErrorMessage } from '../services/api';
 
 const Login = ({ onLogin }) => {
   const navigate = useNavigate();
@@ -46,7 +46,7 @@ const Login = ({ onLogin }) => {
       // Перенаправляем на главную страницу
       navigate('/');
     } catch (err) {
-      setError(err.response?.data?.detail || 'Неверный email или пароль');
+      setError(getApiErrorMessage(err, 'Неверный email или пароль'));
     } finally {
       setLoading(false);
     }

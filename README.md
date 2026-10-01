@@ -1,91 +1,54 @@
 # DormitoryHelper
 
-## Project Structure
+Небольшая доска объявлений для жильцов общежития. React-клиент обращается к REST API на FastAPI, данные пользователей и объявлений хранятся в PostgreSQL.
 
-```
-dormitory-helper/
-├── backend/
-│   ├── src/
-│   ├── pyproject.toml
-│   ├── poetry.lock
-│   └── Dockerfile
-├── announcement-app/
-│   ├── src/
-│   ├── package.json
-│   └── Dockerfile
-├── docker-compose.dev.yml
-├── docker-compose.prod.yml
-└── README.md
-```
+## Быстрый запуск
 
-## About
+Требуется Docker с Docker Compose.
 
-DormitoryHelper is a web application for managing announcements in student dormitories. The system consists of backend API and frontend React application.
-
-## Backend
-
-The backend provides REST API for user authentication and announcement management.
-Authentication made with PyJWT and redis for token in blacklist.
-
-### Backend Technology Stack
-
-* Python 3.12
-* FastAPI
-* PostgreSQL
-* SQLAlchemy
-* PyJWT
-* Poetry for dependency management
-* redis for token blacklist
-
-## Frontend
-
-The frontend is a React SPA (Single Page Application) with minimalistic design.
-
-### Frontend Technology Stack
-
-* React 20
-* React Router DOM
-* Axios for HTTP requests
-* CSS
-
-## Docker Setup
-
-The project supports two modes of operation: development and production.
-
-### Development Mode
-
-In development mode, frontend and backend run as separate services with hot reloading.
-
-Start development mode:
 ```bash
-docker-compose -f docker-compose.dev.yml up --build
+docker compose up --build
 ```
 
-Services:
-* Frontend: http://localhost:3000
-* Backend: http://localhost:8000
+После запуска доступны:
 
-Features:
-* Hot Module Replacement for frontend
-* File system mounted into containers
+- frontend: <http://localhost:3000>;
+- REST API и Swagger UI: <http://localhost:8000/docs>.
 
-### Production Mode
+Чтобы изменить настройки, скопируйте `.env.example` в `.env`. Для локальной проверки значения по умолчанию уже заданы. При реальном развёртывании обязательно замените `POSTGRES_PASSWORD` и `JWT_SECRET_KEY`.
 
-In production mode, frontend is built into static files.
+Остановка приложения:
 
-Start production mode:
 ```bash
-docker-compose -f docker-compose.prod.yml up --build
+docker compose down
 ```
 
-Services:
-* Frontend: http://localhost:3000
-* Backend: http://localhost:8000
+Чтобы также удалить локальные данные PostgreSQL:
 
-Features:
-* Frontend optimized production build
-* Files copied into containers
+```bash
+docker compose down --volumes
+```
 
-### Made by
+## Возможности
 
-* Korotaev Ivan
+- регистрация и вход по JWT;
+- просмотр всех объявлений и фильтрация по категориям;
+- создание, просмотр, редактирование и удаление объявлений;
+- изменение и удаление доступны только автору объявления;
+- профиль пользователя с его объявлениями.
+
+## Структура
+
+```text
+.
+├── announcement-app/     # React SPA
+├── backend/              # FastAPI REST API
+├── .env.example          # пример внешней конфигурации
+├── .dockerignore         # исключения общего build-контекста
+├── docker-compose.yml
+└── Отчёт.md
+```
+
+Frontend собирается multi-stage образом: Node.js используется только на этапе сборки, а готовые файлы раздаёт непривилегированный Nginx. Запросы браузера к `/api` проксируются в backend, поэтому production-образ frontend не зависит от адреса конкретного окружения.
+
+После выхода JWT удаляются из `localStorage`. Сервер не хранит сессии; выданный access-токен технически действителен до истечения его короткого срока жизни (60 минут).

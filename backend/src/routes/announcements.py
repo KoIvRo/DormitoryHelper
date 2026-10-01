@@ -2,7 +2,7 @@ from fastapi import APIRouter, Request, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database.database import get_db
 from database.models import User, Announcement
-from .models import AnnouncementtCreate
+from .models import AnnouncementCreate
 
 
 announcement_router = APIRouter()
@@ -44,7 +44,7 @@ async def account(id: int, request: Request, db: Session = Depends(get_db)):
 
 @announcement_router.post("/")
 async def create_account(
-    data: AnnouncementtCreate, request: Request, db: Session = Depends(get_db)
+    data: AnnouncementCreate, request: Request, db: Session = Depends(get_db)
 ):
     """Создание объявления."""
     request_user = request.state.user
@@ -69,6 +69,31 @@ async def create_account(
     return {"account": new_announcement}
 
 
+@announcement_router.put("/{id}")
+async def update_announcement(
+    id: int,
+    data: AnnouncementCreate,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    """Полное обновление объявления его владельцем."""
+    announcement = db.query(Announcement).filter(Announcement.id == id).first()
+
+    if not announcement:
+        raise HTTPException(status_code=404, detail="Announcement not found")
+
+    if announcement.user_id != request.state.user["user_id"]:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+
+    for field, value in data.model_dump().items():
+        setattr(announcement, field, value)
+
+    db.commit()
+    db.refresh(announcement)
+
+    return {"account": announcement}
+
+
 @announcement_router.delete("/{id}")
 async def delete_account(id: int, request: Request, db: Session = Depends(get_db)):
     """Удаление объявления."""
@@ -80,7 +105,7 @@ async def delete_account(id: int, request: Request, db: Session = Depends(get_db
         raise HTTPException(status_code=404)
 
     if announcement.user_id != request_user["user_id"]:
-        raise HTTPException(status_code=401)
+        raise HTTPException(status_code=403, detail="Not enough permissions")
 
     db.delete(announcement)
     db.commit()

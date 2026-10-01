@@ -21,6 +21,7 @@ async def me(request: Request, db: Session = Depends(get_db)):
     )
 
     return {
+        "id": exsiting_user.id,
         "email": exsiting_user.email,
         "name": exsiting_user.name,
         "announcement": announcement,
