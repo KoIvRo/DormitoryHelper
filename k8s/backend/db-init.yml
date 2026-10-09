@@ -1,0 +1,19 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: db-init
+spec:
+  backoffLimit: 10
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: db-init
+          image: dormitory-helper-backend:v1
+          imagePullPolicy: Never
+          command: ["python", "manage.py"]
+          envFrom:
+            - configMapRef:
+                name: dormitory-helper-config
+            - secretRef:
+                name: dormitory-helper-secret

@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dormitory-helper-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dormitory-helper-backend
+  template:
+    metadata:
+      labels:
+        app: dormitory-helper-backend
+    spec:
+      containers:
+        - name: backend
+          image: dormitory-helper-backend:v1
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8000
+          envFrom:
+            - configMapRef:
+                name: dormitory-helper-config
+            - secretRef:
+                name: dormitory-helper-secret
