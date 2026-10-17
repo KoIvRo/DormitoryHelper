@@ -11,11 +11,13 @@ RUN npm run build
 
 FROM nginx:1.27-alpine AS runtime
 
+ENV NGINX_ENTRYPOINT_QUIET_LOGS=1
+
 COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY nginx-main.conf /etc/nginx/nginx.conf
 COPY --from=build --chown=nginx:nginx /app/build /usr/share/nginx/html
 
-RUN touch /var/run/nginx.pid && \
-    chown -R nginx:nginx /var/run/nginx.pid /var/cache/nginx
+RUN chown -R nginx:nginx /var/cache/nginx
 
 USER nginx
 EXPOSE 8080

@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vector-config
+data:
+  vector.yaml: |
+    data_dir: /vector-data-dir
+
+    api:
+      enabled: true
+      address: 0.0.0.0:8686
+
+    sources:
+      kubernetes_logs:
+        type: kubernetes_logs
+        self_node_name: ${VECTOR_SELF_NODE_NAME}
+        extra_label_selector: "app in (dormitory-helper-backend,frontend)"
+
+    transforms:
+      parse_json:
+        type: remap
+        inputs:
+          - kubernetes_logs
+        source: |
+          parsed, error = parse_json(.message)
+          if error == null {
+            del(.message)
+            . = merge!(., parsed)
+          }
+
+    sinks:
+      victoria_logs:
+        type: http
+        inputs:
+          - parse_json
+        uri: "http://victoria-logs:9428/insert/jsonline?_stream_fields=service.name,kubernetes.pod_namespace,kubernetes.container_name&_msg_field=message&_time_field=timestamp"
+        method: post
+        compression: gzip
+        encoding:
+          codec: json
+        framing:
+          method: newline_delimited
+        healthcheck:
+          enabled: false
