@@ -6,6 +6,11 @@ from database.database import get_db
 from database.models import User, Announcement
 from .models import AnnouncementCreate
 from logging_config import log_fields
+from metrics import (
+    ANNOUNCEMENTS_CREATED,
+    ANNOUNCEMENTS_DELETED,
+    ANNOUNCEMENTS_UPDATED,
+)
 
 announcement_router = APIRouter()
 logger = logging.getLogger("dormitory_helper.announcements")
@@ -138,6 +143,8 @@ async def create_account(
     db.commit()
     db.refresh(new_announcement)
 
+    ANNOUNCEMENTS_CREATED.labels(category=new_announcement.category).inc()
+
     logger.info(
         "Объявление создано",
         extra=log_fields(
@@ -200,6 +207,8 @@ async def update_announcement(
     db.commit()
     db.refresh(announcement)
 
+    ANNOUNCEMENTS_UPDATED.labels(category=announcement.category).inc()
+
     logger.info(
         "Объявление обновлено",
         extra=log_fields(
@@ -255,6 +264,8 @@ async def delete_account(id: int, request: Request, db: Session = Depends(get_db
     deleted_category = announcement.category
     db.delete(announcement)
     db.commit()
+
+    ANNOUNCEMENTS_DELETED.labels(category=deleted_category).inc()
 
     logger.info(
         "Объявление удалено",

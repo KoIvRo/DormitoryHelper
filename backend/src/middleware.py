@@ -69,6 +69,9 @@ class JWTMiddleware(BaseHTTPMiddleware):
         "/auth/login",
         "/openapi.json",
         "/auth/refresh",
+        "/health/live",
+        "/health/ready",
+        "/metrics",
     )
 
     async def dispatch(self, request, call_next):

@@ -2,3 +2,6 @@
 **/.ruff_cache/
 **/.pytest_cache/
 .env
+.vscode
+.agents
+.codex

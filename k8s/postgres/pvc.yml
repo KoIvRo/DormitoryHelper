@@ -3,6 +3,8 @@ kind: PersistentVolumeClaim
 metadata:
   name: postgres-data
 spec:
+  storageClassName: standard
+  volumeName: postgres-data-pv
   accessModes:
     - ReadWriteOnce
   resources:

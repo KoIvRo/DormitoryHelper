@@ -8,6 +8,7 @@ from .models import UserRegistration, UserLogin
 from security.pass_utils import get_pass_hash, verify_pass
 from security.jwt_utils import create_access_token, create_refresh_token, verify_jwt
 from logging_config import log_fields
+from metrics import USER_LOGINS, USER_REGISTRATIONS
 
 auth_router = APIRouter()
 logger = logging.getLogger("dormitory_helper.auth")
@@ -42,6 +43,8 @@ async def register(
     db.commit()
     db.refresh(new_user)
 
+    USER_REGISTRATIONS.inc()
+
     access_token = create_access_token(new_user.id)
     refresh_token = create_refresh_token(new_user.id)
 
@@ -63,6 +66,7 @@ async def login(user_data: UserLogin, request: Request, db: Session = Depends(ge
     """Эндпоинт для логина."""
     existing_user = db.query(User).filter(User.email == user_data.email).first()
     if not existing_user:
+        USER_LOGINS.labels(outcome="failure").inc()
         logger.warning(
             "Вход отклонён: пользователь не найден",
             extra=log_fields(
@@ -75,6 +79,7 @@ async def login(user_data: UserLogin, request: Request, db: Session = Depends(ge
         raise HTTPException(status_code=400)
 
     if not verify_pass(user_data.password, existing_user.password):
+        USER_LOGINS.labels(outcome="failure").inc()
         logger.warning(
             "Вход отклонён: неверный пароль",
             extra=log_fields(
@@ -89,6 +94,8 @@ async def login(user_data: UserLogin, request: Request, db: Session = Depends(ge
 
     access_token = create_access_token(existing_user.id)
     refresh_token = create_refresh_token(existing_user.id)
+
+    USER_LOGINS.labels(outcome="success").inc()
 
     logger.info(
         "Пользователь вошёл в систему",

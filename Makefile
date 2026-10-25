@@ -1,6 +1,10 @@
-.PHONY: up down
+.PHONY: build up down
 
-up:
+build:
+	minikube image build -t dormitory-helper-backend:v1 ./backend
+	minikube image build -t dormitory-helper-frontend:v1 ./announcement-app
+
+up: build
 	kubectl apply -f k8s/configmap.yml -f k8s/secret.yml
 	kubectl apply -f k8s/postgres/pv.yml -f k8s/postgres/pvc.yml -f k8s/postgres/service.yml -f k8s/postgres/deployment.yml
 	kubectl rollout status deployment/postgres
