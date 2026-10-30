@@ -72,6 +72,7 @@ class JWTMiddleware(BaseHTTPMiddleware):
         "/health/live",
         "/health/ready",
         "/metrics",
+        "/demo/work",
     )
 
     async def dispatch(self, request, call_next):

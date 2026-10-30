@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dormitory-helper-prober
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dormitory-helper-prober
+  template:
+    metadata:
+      labels:
+        app: dormitory-helper-prober
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9115"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+        - name: prober
+          image: dormitory-helper-prober:v1
+          imagePullPolicy: Never
+          ports:
+            - name: metrics
+              containerPort: 9115
+          env:
+            - name: PROBE_TARGET_URL
+              value: http://backend:8000/health/ready
+            - name: PROBE_INTERVAL_SECONDS
+              value: "5"
+            - name: PROBE_TIMEOUT_SECONDS
+              value: "2"
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: metrics
+          resources:
+            requests:
+              cpu: 10m
+              memory: 24Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
