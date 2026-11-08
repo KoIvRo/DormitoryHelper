@@ -1,0 +1,127 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: alert-webhook-code
+data:
+  server.py: |
+    import html
+    import json
+    from datetime import datetime, timezone
+    from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+    notifications = []
+
+    class Handler(BaseHTTPRequestHandler):
+        def do_POST(self):
+            if self.path != "/alerts":
+                self.send_error(404)
+                return
+            length = int(self.headers.get("Content-Length", "0"))
+            payload = json.loads(self.rfile.read(length) or b"{}")
+            notifications.insert(0, {
+                "received_at": datetime.now(timezone.utc).isoformat(),
+                "payload": payload,
+            })
+            del notifications[100:]
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(b"ok")
+
+        def do_GET(self):
+            if self.path == "/health":
+                self.send_response(200)
+                self.end_headers()
+                self.wfile.write(b"ok")
+                return
+            if self.path == "/api/notifications":
+                body = json.dumps(notifications, ensure_ascii=False, indent=2).encode()
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json; charset=utf-8")
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+                return
+            if self.path != "/":
+                self.send_error(404)
+                return
+            cards = []
+            for item in notifications:
+                payload = item["payload"]
+                for alert in payload.get("alerts", []):
+                    labels = alert.get("labels", {})
+                    annotations = alert.get("annotations", {})
+                    status = alert.get("status", payload.get("status", "unknown"))
+                    cards.append(f'''<article class="{html.escape(status)}">
+                      <div class="status">{html.escape(status.upper())}</div>
+                      <h2>{html.escape(labels.get("alertname", "Alert"))}</h2>
+                      <p>{html.escape(annotations.get("summary", ""))}</p>
+                      <p>{html.escape(annotations.get("description", ""))}</p>
+                      <small>severity={html.escape(labels.get("severity", ""))} · received={html.escape(item["received_at"])}</small>
+                    </article>''')
+            body = f'''<!doctype html><html lang="ru"><head><meta charset="utf-8">
+              <meta http-equiv="refresh" content="5"><title>DormitoryHelper Alerts</title>
+              <style>body{{font:16px system-ui;background:#f4f6f8;color:#17212b;max-width:960px;margin:40px auto;padding:0 20px}}h1{{margin-bottom:4px}}.hint{{color:#607080;margin-top:0}}article{{background:white;border-left:8px solid #d33;border-radius:8px;padding:18px 22px;margin:18px 0;box-shadow:0 2px 12px #0001}}article.resolved{{border-color:#22a06b}}.status{{font-weight:700;color:#d33}}article.resolved .status{{color:#168553}}small{{color:#607080}}</style>
+              </head><body><h1>DormitoryHelper — уведомления</h1><p class="hint">Webhook-получатель Alertmanager · автообновление каждые 5 секунд</p>{''.join(cards) if cards else '<article><h2>Уведомлений пока нет</h2><p>Запустите демонстрационный сценарий.</p></article>'}</body></html>'''.encode()
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+        def log_message(self, *_):
+            pass
+
+    ThreadingHTTPServer(("0.0.0.0", 8080), Handler).serve_forever()
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: alert-webhook
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: alert-webhook
+  template:
+    metadata:
+      labels:
+        app: alert-webhook
+    spec:
+      containers:
+        - name: webhook
+          image: python:3.12-alpine
+          command: [python, /app/server.py]
+          ports:
+            - name: http
+              containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
+          volumeMounts:
+            - name: code
+              mountPath: /app
+              readOnly: true
+      volumes:
+        - name: code
+          configMap:
+            name: alert-webhook-code
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: alert-webhook
+spec:
+  selector:
+    app: alert-webhook
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http

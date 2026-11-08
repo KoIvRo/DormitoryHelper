@@ -1,0 +1,122 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dormitory-helper-alert-rules
+data:
+  alert-rules.yml: |
+    groups:
+      - name: dormitory-helper-service
+        interval: 15s
+        rules:
+          - alert: DormitoryHelperUnavailable
+            expr: max_over_time(dormitory_helper_probe_success[30s]) == 0
+            for: 1m
+            labels:
+              severity: critical
+              service: dormitory-helper
+              component: backend
+            annotations:
+              summary: "DormitoryHelper недоступен"
+              description: "Внешняя проверка backend и PostgreSQL неуспешна более 1 минуты."
+          - alert: HighHttp5xxRate
+            expr: '((sum(rate(http_requests_total{status=~"5..",handler!="none"}[2m])) / sum(rate(http_requests_total{handler!="none"}[2m]))) > 0.05) and (sum(rate(http_requests_total{handler!="none"}[2m])) > 0.1)'
+            for: 1m
+            labels:
+              severity: warning
+              service: dormitory-helper
+              component: backend
+            annotations:
+              summary: "Высокая доля HTTP 5xx"
+              description: "Более 5% запросов завершаются ошибкой 5xx при наличии трафика. Текущее значение: {{ $value | humanizePercentage }}."
+          - alert: HighHttpLatency
+            expr: '(histogram_quantile(0.95, sum by (le) (rate(http_request_duration_seconds_bucket{handler!="none"}[2m]))) > 1) and (sum(rate(http_request_duration_seconds_count{handler!="none"}[2m])) > 0.1)'
+            for: 1m
+            labels:
+              severity: warning
+              service: dormitory-helper
+              component: backend
+            annotations:
+              summary: "Высокая задержка HTTP"
+              description: "p95 времени ответа backend превышает 1 секунду. Текущее значение: {{ $value | humanizeDuration }}."
+      - name: dormitory-helper-runtime
+        interval: 15s
+        rules:
+          - alert: TooManyRequestsInProgress
+            expr: sum(dormitory_helper_http_requests_inprogress) > 10
+            for: 30s
+            labels:
+              severity: warning
+              service: dormitory-helper
+              component: fastapi
+            annotations:
+              summary: "Слишком много запросов обрабатывается одновременно"
+              description: "FastAPI обрабатывает более 10 запросов одновременно в течение 30 секунд. Текущее значение: {{ $value }}."
+          - alert: PythonProcessHighMemory
+            expr: 'process_resident_memory_bytes{container="backend"} > 400 * 1024 * 1024'
+            for: 5m
+            labels:
+              severity: warning
+              service: dormitory-helper
+              component: python
+            annotations:
+              summary: "Python-процесс использует слишком много памяти"
+              description: "RSS backend превышает 400 MiB при Kubernetes-лимите 512 MiB. Текущее значение: {{ $value | humanize1024 }}B."
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vmalert
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vmalert
+  template:
+    metadata:
+      labels:
+        app: vmalert
+    spec:
+      containers:
+        - name: vmalert
+          image: victoriametrics/vmalert:v1.106.1
+          args:
+            - -datasource.url=http://vectoriametrics-victoria-metrics-single-server:8428
+            - -remoteRead.url=http://vectoriametrics-victoria-metrics-single-server:8428
+            - -remoteWrite.url=http://vectoriametrics-victoria-metrics-single-server:8428
+            - -notifier.url=http://alertmanager:9093
+            - -rule=/etc/vmalert/rules/*.yml
+            - -evaluationInterval=15s
+          ports:
+            - name: http
+              containerPort: 8880
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+          resources:
+            requests:
+              cpu: 25m
+              memory: 32Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+          volumeMounts:
+            - name: rules
+              mountPath: /etc/vmalert/rules
+              readOnly: true
+      volumes:
+        - name: rules
+          configMap:
+            name: dormitory-helper-alert-rules
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vmalert
+spec:
+  selector:
+    app: vmalert
+  ports:
+    - name: http
+      port: 8880
+      targetPort: http

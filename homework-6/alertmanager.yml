@@ -1,0 +1,22 @@
+global:
+  resolve_timeout: 1m
+
+route:
+  receiver: local-webhook
+  group_by: [alertname, severity, service]
+  group_wait: 10s
+  group_interval: 30s
+  repeat_interval: 2h
+
+receivers:
+  - name: local-webhook
+    webhook_configs:
+      - url: http://alert-webhook:8080/alerts
+        send_resolved: true
+
+inhibit_rules:
+  - source_matchers:
+      - severity="critical"
+    target_matchers:
+      - severity="warning"
+    equal: [service, component]
