@@ -1,0 +1,55 @@
+adminUser: admin
+adminPassword: admin
+
+service:
+  type: ClusterIP
+  port: 80
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+grafana.ini:
+  analytics:
+    reporting_enabled: false
+    check_for_updates: false
+  users:
+    default_theme: dark
+
+datasources:
+  datasources.yaml:
+    apiVersion: 1
+    deleteDatasources:
+      - name: VictoriaMetrics
+        orgId: 1
+    datasources:
+      - name: VictoriaMetrics
+        uid: victoriametrics
+        type: prometheus
+        access: proxy
+        url: http://vectoriametrics-victoria-metrics-single-server.default.svc.cluster.local:8428
+        isDefault: true
+        editable: true
+        jsonData:
+          httpMethod: POST
+          prometheusType: Prometheus
+          prometheusVersion: 2.50.0
+          timeInterval: 15s
+
+sidecar:
+  dashboards:
+    enabled: true
+    label: grafana_dashboard
+    labelValue: "1"
+    folderAnnotation: grafana_folder
+    provider:
+      allowUiUpdates: true
+      disableDelete: false
+      foldersFromFilesStructure: true
+
+persistence:
+  enabled: false

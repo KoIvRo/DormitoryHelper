@@ -1,0 +1,221 @@
+{
+  "annotations": {"list": []},
+  "description": "RED, Golden Signals, Python runtime and probe SLA for DormitoryHelper",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {"type": "prometheus", "uid": "victoriametrics"},
+      "description": "Последний результат внешней проверки backend и PostgreSQL: 1 — доступно, 0 — ошибка.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "mappings": [
+            {
+              "options": {
+                "0": {"color": "red", "text": "DOWN"},
+                "1": {"color": "green", "text": "UP"}
+              },
+              "type": "value"
+            }
+          ],
+          "max": 1,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "red", "value": null},
+              {"color": "green", "value": 1}
+            ]
+          },
+          "unit": "none"
+        }
+      },
+      "gridPos": {"h": 5, "w": 4, "x": 0, "y": 0},
+      "id": 1,
+      "options": {"colorMode": "background", "graphMode": "area", "justifyMode": "center", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto", "wideLayout": true},
+      "targets": [{"editorMode": "code", "expr": "min(dormitory_helper_probe_success)", "instant": true, "legendFormat": "application", "range": false, "refId": "A"}],
+      "title": "Состояние приложения",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "victoriametrics"},
+      "description": "Суммарное число HTTP-запросов в секунду за окно 5 минут (RED: Rate).",
+      "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "decimals": 2, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]}, "unit": "reqps"}},
+      "gridPos": {"h": 5, "w": 4, "x": 4, "y": 0},
+      "id": 2,
+      "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "center", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto", "wideLayout": true},
+      "targets": [{"editorMode": "code", "expr": "sum(rate(http_requests_total{handler!=\"none\"}[5m]))", "instant": false, "legendFormat": "RPS", "range": true, "refId": "A"}],
+      "title": "RPS",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "victoriametrics"},
+      "description": "Доля ответов 5xx среди всех HTTP-запросов (RED: Errors).",
+      "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "decimals": 2, "max": 100, "min": 0, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 0.5}, {"color": "red", "value": 1}]}, "unit": "percent"}},
+      "gridPos": {"h": 5, "w": 4, "x": 8, "y": 0},
+      "id": 3,
+      "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "center", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto", "wideLayout": true},
+      "targets": [{"editorMode": "code", "expr": "100 * sum(rate(http_requests_total{status=~\"5..\",handler!=\"none\"}[5m])) / clamp_min(sum(rate(http_requests_total{handler!=\"none\"}[5m])), 0.000001)", "instant": false, "legendFormat": "5xx", "range": true, "refId": "A"}],
+      "title": "Ошибки 5xx",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "victoriametrics"},
+      "description": "95-й перцентиль времени ответа за 5 минут (RED: Duration / Golden Signals: Latency).",
+      "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "decimals": 3, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 0.5}, {"color": "red", "value": 1}]}, "unit": "s"}},
+      "gridPos": {"h": 5, "w": 4, "x": 12, "y": 0},
+      "id": 4,
+      "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "center", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto", "wideLayout": true},
+      "targets": [{"editorMode": "code", "expr": "histogram_quantile(0.95, sum by (le) (rate(http_request_duration_seconds_bucket{handler!=\"none\"}[5m])))", "instant": false, "legendFormat": "p95", "range": true, "refId": "A"}],
+      "title": "Latency p95",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "victoriametrics"},
+      "description": "SLA из ДЗ-5: доля успешных внешних проб за скользящие 30 дней. Цель — не менее 98.5%.",
+      "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "decimals": 3, "max": 100, "min": 0, "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "yellow", "value": 98.5}, {"color": "green", "value": 99}]}, "unit": "percent"}},
+      "gridPos": {"h": 5, "w": 4, "x": 16, "y": 0},
+      "id": 5,
+      "options": {"colorMode": "background", "graphMode": "area", "justifyMode": "center", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "value_and_name", "wideLayout": true},
+      "targets": [{"editorMode": "code", "expr": "100 * avg_over_time(dormitory_helper_probe_success[30d])", "instant": true, "legendFormat": "SLA ≥ 98.5%", "range": false, "refId": "A"}],
+      "title": "SLA пробера (30 дней)",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "victoriametrics"},
+      "description": "Какая доля допустимого SLA error budget ещё остаётся. Отрицательное значение означает нарушение SLA.",
+      "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "decimals": 1, "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "yellow", "value": 25}, {"color": "green", "value": 50}]}, "unit": "percent"}},
+      "gridPos": {"h": 5, "w": 4, "x": 20, "y": 0},
+      "id": 6,
+      "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "center", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto", "wideLayout": true},
+      "targets": [{"editorMode": "code", "expr": "(100 * avg_over_time(dormitory_helper_probe_success[30d]) - 98.5) / (100 - 98.5) * 100", "instant": true, "legendFormat": "budget", "range": false, "refId": "A"}],
+      "title": "Остаток SLA error budget",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "victoriametrics"},
+      "description": "Поток ответов по HTTP-кодам; помогает локализовать рост ошибок.",
+      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"drawStyle": "line", "fillOpacity": 15, "lineInterpolation": "linear", "lineWidth": 2, "pointSize": 5, "showPoints": "never", "spanNulls": false, "stacking": {"group": "A", "mode": "normal"}}, "unit": "reqps"}},
+      "gridPos": {"h": 8, "w": 8, "x": 0, "y": 5},
+      "id": 7,
+      "options": {"legend": {"calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "multi", "sort": "desc"}},
+      "targets": [{"editorMode": "code", "expr": "sum by (status) (rate(http_requests_total{handler!=\"none\"}[$__rate_interval]))", "legendFormat": "HTTP {{status}}", "range": true, "refId": "A"}],
+      "title": "RPS по HTTP-статусам",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "victoriametrics"},
+      "description": "Нагрузка по endpoint: детализация верхнеуровневого RPS.",
+      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"drawStyle": "line", "fillOpacity": 10, "lineInterpolation": "linear", "lineWidth": 2, "pointSize": 5, "showPoints": "never", "spanNulls": false, "stacking": {"group": "A", "mode": "none"}}, "unit": "reqps"}},
+      "gridPos": {"h": 8, "w": 8, "x": 8, "y": 5},
+      "id": 8,
+      "options": {"legend": {"calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "multi", "sort": "desc"}},
+      "targets": [{"editorMode": "code", "expr": "sum by (method, handler) (rate(http_requests_total{handler!=\"none\"}[$__rate_interval]))", "legendFormat": "{{method}} {{handler}}", "range": true, "refId": "A"}],
+      "title": "RPS по маршрутам",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "victoriametrics"},
+      "description": "Перцентили latency показывают обычный и хвостовой пользовательский опыт.",
+      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"drawStyle": "line", "fillOpacity": 8, "lineInterpolation": "smooth", "lineWidth": 2, "pointSize": 5, "showPoints": "never", "spanNulls": false, "stacking": {"group": "A", "mode": "none"}}, "unit": "s"}},
+      "gridPos": {"h": 8, "w": 8, "x": 16, "y": 5},
+      "id": 9,
+      "options": {"legend": {"calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "multi", "sort": "desc"}},
+      "targets": [
+        {"editorMode": "code", "expr": "histogram_quantile(0.50, sum by (le) (rate(http_request_duration_seconds_bucket{handler!=\"none\"}[$__rate_interval])))", "legendFormat": "p50", "range": true, "refId": "A"},
+        {"editorMode": "code", "expr": "histogram_quantile(0.95, sum by (le) (rate(http_request_duration_seconds_bucket{handler!=\"none\"}[$__rate_interval])))", "legendFormat": "p95", "range": true, "refId": "B"},
+        {"editorMode": "code", "expr": "histogram_quantile(0.99, sum by (le) (rate(http_request_duration_seconds_bucket{handler!=\"none\"}[$__rate_interval])))", "legendFormat": "p99", "range": true, "refId": "C"}
+      ],
+      "title": "Latency p50 / p95 / p99",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "victoriametrics"},
+      "description": "Текущие запросы в обработке (Golden Signals: Saturation).",
+      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"drawStyle": "line", "fillOpacity": 20, "lineInterpolation": "linear", "lineWidth": 2, "pointSize": 5, "showPoints": "never", "spanNulls": false, "stacking": {"group": "A", "mode": "normal"}}, "unit": "short"}},
+      "gridPos": {"h": 7, "w": 6, "x": 0, "y": 13},
+      "id": 10,
+      "options": {"legend": {"calcs": ["max"], "displayMode": "table", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "multi", "sort": "desc"}},
+      "targets": [{"editorMode": "code", "expr": "sum by (method, handler) (dormitory_helper_http_requests_inprogress)", "legendFormat": "{{method}} {{handler}}", "range": true, "refId": "A"}],
+      "title": "HTTP in-flight",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "victoriametrics"},
+      "description": "Потребление CPU процессом Python (USE: Utilization).",
+      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"drawStyle": "line", "fillOpacity": 15, "lineInterpolation": "linear", "lineWidth": 2, "pointSize": 5, "showPoints": "never", "spanNulls": false, "stacking": {"group": "A", "mode": "none"}}, "unit": "percentunit"}},
+      "gridPos": {"h": 7, "w": 6, "x": 6, "y": 13},
+      "id": 11,
+      "options": {"legend": {"calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "multi", "sort": "desc"}},
+      "targets": [{"editorMode": "code", "expr": "rate(process_cpu_seconds_total{app=\"dormitory-helper-backend\"}[$__rate_interval])", "legendFormat": "{{pod}}", "range": true, "refId": "A"}],
+      "title": "Runtime: CPU",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "victoriametrics"},
+      "description": "Resident Set Size процесса Python (USE: Utilization / Saturation).",
+      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"drawStyle": "line", "fillOpacity": 15, "lineInterpolation": "linear", "lineWidth": 2, "pointSize": 5, "showPoints": "never", "spanNulls": false, "stacking": {"group": "A", "mode": "none"}}, "unit": "bytes"}},
+      "gridPos": {"h": 7, "w": 6, "x": 12, "y": 13},
+      "id": 12,
+      "options": {"legend": {"calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "multi", "sort": "desc"}},
+      "targets": [{"editorMode": "code", "expr": "process_resident_memory_bytes{app=\"dormitory-helper-backend\"}", "legendFormat": "RSS {{pod}}", "range": true, "refId": "A"}, {"editorMode": "code", "expr": "process_virtual_memory_bytes{app=\"dormitory-helper-backend\"}", "legendFormat": "VMS {{pod}}", "range": true, "refId": "B"}],
+      "title": "Runtime: память",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "victoriametrics"},
+      "description": "Частота сборок мусора Python по поколениям — детализация поведения runtime.",
+      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"drawStyle": "line", "fillOpacity": 10, "lineInterpolation": "linear", "lineWidth": 2, "pointSize": 5, "showPoints": "never", "spanNulls": false, "stacking": {"group": "A", "mode": "none"}}, "unit": "ops"}},
+      "gridPos": {"h": 7, "w": 6, "x": 18, "y": 13},
+      "id": 13,
+      "options": {"legend": {"calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "multi", "sort": "desc"}},
+      "targets": [{"editorMode": "code", "expr": "rate(python_gc_collections_total{app=\"dormitory-helper-backend\"}[$__rate_interval])", "legendFormat": "generation {{generation}}", "range": true, "refId": "A"}],
+      "title": "Runtime: Python GC",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "victoriametrics"},
+      "description": "Технические показатели внешней проверки: latency и HTTP-код.",
+      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"drawStyle": "line", "fillOpacity": 12, "lineInterpolation": "linear", "lineWidth": 2, "pointSize": 5, "showPoints": "never", "spanNulls": false, "stacking": {"group": "A", "mode": "none"}}}, "overrides": [{"matcher": {"id": "byName", "options": "duration"}, "properties": [{"id": "unit", "value": "s"}]}, {"matcher": {"id": "byName", "options": "HTTP status"}, "properties": [{"id": "custom.axisPlacement", "value": "right"}, {"id": "unit", "value": "short"}]}]},
+      "gridPos": {"h": 7, "w": 8, "x": 0, "y": 20},
+      "id": 14,
+      "options": {"legend": {"calcs": ["lastNotNull", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "multi", "sort": "desc"}},
+      "targets": [{"editorMode": "code", "expr": "dormitory_helper_probe_duration_seconds", "legendFormat": "duration", "range": true, "refId": "A"}, {"editorMode": "code", "expr": "dormitory_helper_probe_http_status_code", "legendFormat": "HTTP status", "range": true, "refId": "B"}],
+      "title": "Детализация пробера",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "victoriametrics"},
+      "description": "Интенсивность ключевых пользовательских операций приложения.",
+      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"drawStyle": "line", "fillOpacity": 10, "lineInterpolation": "linear", "lineWidth": 2, "pointSize": 5, "showPoints": "never", "spanNulls": false, "stacking": {"group": "A", "mode": "none"}}, "unit": "ops"}},
+      "gridPos": {"h": 7, "w": 16, "x": 8, "y": 20},
+      "id": 15,
+      "options": {"legend": {"calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "multi", "sort": "desc"}},
+      "targets": [
+        {"editorMode": "code", "expr": "rate(dormitory_helper_user_registrations_total[$__rate_interval])", "legendFormat": "registrations", "range": true, "refId": "A"},
+        {"editorMode": "code", "expr": "sum by (outcome) (rate(dormitory_helper_user_logins_total[$__rate_interval]))", "legendFormat": "logins {{outcome}}", "range": true, "refId": "B"},
+        {"editorMode": "code", "expr": "sum by (category) (rate(dormitory_helper_announcements_created_total[$__rate_interval]))", "legendFormat": "created {{category}}", "range": true, "refId": "C"},
+        {"editorMode": "code", "expr": "sum by (category) (rate(dormitory_helper_announcements_updated_total[$__rate_interval]))", "legendFormat": "updated {{category}}", "range": true, "refId": "D"},
+        {"editorMode": "code", "expr": "sum by (category) (rate(dormitory_helper_announcements_deleted_total[$__rate_interval]))", "legendFormat": "deleted {{category}}", "range": true, "refId": "E"}
+      ],
+      "title": "Бизнес-метрики",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 39,
+  "tags": ["dormitory-helper", "RED", "USE", "SLA"],
+  "templating": {"list": []},
+  "time": {"from": "now-1h", "to": "now"},
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "DormitoryHelper — Application & SLA",
+  "uid": "dormitory-helper",
+  "version": 1,
+  "weekStart": ""
+}
